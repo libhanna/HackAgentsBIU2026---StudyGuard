@@ -1,13 +1,16 @@
 <template>
   <div class="calendar-panel" :class="{ 'full-screen': isFullScreen }">
     <div class="header">
-      <h2>📅 Today's Schedule</h2>
+      <h2>Today's Schedule</h2>
       <button class="toggle-btn" @click="isFullScreen = !isFullScreen">
         {{ isFullScreen ? '⛙' : '⛶' }}
       </button>
     </div>
     
-    <div v-if="loading" class="state-msg">Loading events...</div>
+    <div v-if="loading" class="state-msg loading-container">
+      <div class="spinner"></div>
+      <span>Loading events...</span>
+    </div>
     <div v-else-if="error" class="state-msg error">{{ error }}</div>
     
     <div v-else class="events-list">
@@ -64,18 +67,29 @@ onMounted(() => {
 
 <style scoped>
 .calendar-panel {
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 30px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1),
+              inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  padding: 2rem;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   width: 100%;
   height: 100%;
   overflow-y: auto;
+}
+
+.calendar-panel::-webkit-scrollbar {
+  width: 6px;
+}
+.calendar-panel::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 10px;
 }
 
 .calendar-panel.full-screen {
@@ -86,71 +100,119 @@ onMounted(() => {
   height: 100vh;
   z-index: 1000;
   border-radius: 0;
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
-  border-bottom: 2px solid #eee;
-  padding-bottom: 0.5rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  padding-bottom: 1rem;
 }
 
 .header h2 {
   margin: 0;
-  color: #333;
-  font-size: 1.4rem;
+  color: #1a1a1a;
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
 }
 
 .toggle-btn {
-  background: transparent;
-  border: none;
+  background: rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 1.2rem;
   cursor: pointer;
-  color: #666;
+  color: #333;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.5);
+  transform: scale(1.05);
   color: #000;
 }
 
 .events-list {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.2rem;
 }
 
 .event-card {
-  background: white;
-  border-left: 4px solid #84c1ff;
-  border-radius: 6px;
-  padding: 1rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-left: 4px solid #2a5298;
+  border-radius: 16px;
+  padding: 1.2rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.event-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+  background: rgba(255, 255, 255, 0.55);
 }
 
 .time-block {
-  font-weight: bold;
+  font-weight: 600;
   color: #555;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+  display: flex;
+  gap: 0.5rem;
 }
 
 .topic {
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   color: #222;
+  font-weight: 500;
 }
 
 .state-msg {
   text-align: center;
-  color: #777;
-  padding: 2rem 0;
-  font-style: italic;
+  color: #555;
+  padding: 3rem 0;
+  font-size: 1.1rem;
+  font-weight: 500;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.6);
 }
 
 .state-msg.error {
   color: #d9534f;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(42, 82, 152, 0.2);
+  border-top-color: #2a5298;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

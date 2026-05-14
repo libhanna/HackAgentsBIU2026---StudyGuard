@@ -1,11 +1,9 @@
 <script setup>
 import { Toaster, toast } from 'vue-sonner'
 import 'vue-sonner/style.css'
-import Header from './components/Header.vue'
 </script>
 
 <template>
-  <Header />
   <router-view />
   <Toaster />
 </template>

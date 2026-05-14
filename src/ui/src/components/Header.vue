@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { d } from 'vue-router/dist/useApi-D6ckOsFy.js';
 
 </script>
 
 <template>
     <header class="header">
-        <div><a href="/">Home</a></div>
-        <div><a href="/calendars">Calendars</a></div>
+        <div>Home</div>
+        <div><button @click="$emit('calendars')">Calendars</button></div>
         <div><a href="/tasks">Tasks</a></div>
     </header>
 </template>

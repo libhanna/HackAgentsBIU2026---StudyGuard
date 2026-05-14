@@ -36,12 +36,12 @@ def health():
 def get_calendar():
     db.sync_with_google()
     
-    # שליפת כל האירועים מכל התאריכים ואיחודם לרשימה אחת שטוחה
-    all_events = []
-    events_by_date = db.data.get("events", {})
+    # שליפת כל האירועים רק של היום הנוכחי (לפי תאריך מקומי)
+    today_str = datetime.now().strftime("%Y-%m-%d")
+    all_events = db.data.get("events", {}).get(today_str, [])
     
-    for date in events_by_date:
-        all_events.extend(events_by_date[date])
+    # מיון האירועים לפי שעת ההתחלה, מכיוון שאספנו ממספר יומנים שונים
+    all_events = sorted(all_events, key=lambda x: x["start"])
     
     return jsonify({"events": all_events}), 200
 
@@ -91,7 +91,7 @@ def send_message():
         },
         {"role": "user", "content": user_msg}
     ]
-)
+    )
 
         ai_text = response.choices[0].message.content
         

@@ -30,7 +30,7 @@ html, body, #app {
   align-items: stretch;
   width: 100%;
   height: 100%;
-  background-image: url("https://images.pexels.com/photos/19196730/pexels-photo-19196730.jpeg");
+  background-image: url("https://images.pexels.com/photos/314726/pexels-photo-314726.jpeg");
   background-size: cover;
   background-attachment: fixed;
   padding: 2rem;
@@ -55,6 +55,7 @@ html, body, #app {
   justify-content: center;
   height: calc(100vh - 150px);
   top: 100px;
+  position: relative;
   box-sizing: border-box;
 }
 </style>
