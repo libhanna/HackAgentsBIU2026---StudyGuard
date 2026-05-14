@@ -8,7 +8,7 @@ def get_active_tab_metadata(port=9222):
     metadata = {}
     if is_chrome_in_front():
         try:
-            # 1. קבלת רשימת הכרטיסיות מהדפדפן
+            #  1. קבלת רשימת הכרטיסיות מהדפדפן
             response = requests.get(f"http://127.0.0.1:{port}/json")
             tabs = response.json()
 
