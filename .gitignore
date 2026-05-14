@@ -66,3 +66,9 @@ logs/
 *.tmp
 *.bak
 *.cache
+
+# App Specific 
+# --- StudyGuard Specific ---
+credentials.json
+token.json
+calendar_db.json
