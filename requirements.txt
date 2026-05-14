@@ -3,3 +3,7 @@ agno
 python-dotenv
 selenium
 pygetwindow
+requests
+icalendar
+openai
+bs4

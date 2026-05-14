@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 import pygetwindow as gw
 import time
-from start_managed_browser import start_managed_browser
+from tools.browser.start_managed_browser import start_managed_browser
 import requests
 
 def get_active_tab_metadata(port=9222):
@@ -63,7 +63,7 @@ def is_chrome_in_front():
     return "Google Chrome" in active_window.title
 
 # --- הרצה לדוגמה ---
-start_managed_browser()
-while (1):
-    time.sleep(10)
-    print(get_active_tab_metadata())
+# start_managed_browser()
+# while (1):
+#     time.sleep(10)
+#     print(get_active_tab_metadata())

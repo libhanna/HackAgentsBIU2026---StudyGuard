@@ -46,7 +46,7 @@ async def run_agent() -> None:
         )
 
         await agent.aprint_response(
-            "use start_browser!"
+            "use start_browser! after that permanently use the get_current_tab_metadata and use close_tab after 40 seconds if the current active tab metadata do not relate to sport or blank! do not wait to feedback from the user and do what you are requested before!"
         )
 
         print("Agent is running. Press Ctrl+C to stop.")
