@@ -63,49 +63,66 @@ class CalendarDB:
         try:
             service = build('calendar', 'v3', credentials=creds)
 
-            # Fetch events from the START of today (00:00)
-            today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0).isoformat() + 'Z'
-            print(f"[System] Fetching all events for today (filtering birthdays)...")
-            
-            events_result = service.events().list(calendarId='primary', 
-                                                timeMin=today_start,
-                                                maxResults=10, 
-                                                singleEvents=True,
-                                                orderBy='startTime').execute()
-            events = events_result.get('items', [])
+            # Fetch events from the START to END of today
+            now = datetime.utcnow()
+            today_start = now.replace(hour=0, minute=0, second=0, microsecond=0).isoformat() + 'Z'
+            today_end = now.replace(hour=23, minute=59, second=59, microsecond=999999).isoformat() + 'Z'
+            print(f"[System] Fetching today's events from all calendars...")
 
             # Reset local events to ensure sync is identical to Google
             self.data["events"] = {} 
+            
+            # Get all calendars for the user
+            calendars_result = service.calendarList().list().execute()
+            calendars = calendars_result.get('items', [])
+            
+            for calendar in calendars:
+                # Skip holidays calendars
+                calendar_name = calendar.get('summary', '')
+                if 'חגים' in calendar_name or 'Holidays' in calendar_name:
+                    print(f"[System] Skipping calendar: {calendar_name}")
+                    continue
 
-            for event in events:
-                topic = event.get('summary', 'No Title')
-                
-                # --- Birthdays Filter ---
-                # Skipping events that contain birthday-related keywords
-                if "יום הולדת" in topic or "Birthday" in topic:
-                    continue
-                if "Valentines" in topic:
-                    continue
-                start = event['start'].get('dateTime', event['start'].get('date'))
-                end = event['end'].get('dateTime', event['end'].get('date'))
-                
-                # Handling all-day events vs timed events
                 try:
-                    # Timed events
-                    start_dt = datetime.fromisoformat(start.replace('Z', '+00:00'))
-                    end_dt = datetime.fromisoformat(end.replace('Z', '+00:00'))
-                except ValueError:
-                    # All-day events (format is YYYY-MM-DD)
-                    start_dt = datetime.strptime(start, "%Y-%m-%d")
-                    end_dt = datetime.strptime(end, "%Y-%m-%d")
-                
-                date_str = start_dt.strftime("%Y-%m-%d")
-                self.add_event(
-                    date_str, 
-                    start_dt.strftime("%H:%M"), 
-                    end_dt.strftime("%H:%M"), 
-                    topic
-                )
+                    events_result = service.events().list(calendarId=calendar['id'], 
+                                                        timeMin=today_start,
+                                                        timeMax=today_end,
+                                                        singleEvents=True,
+                                                        orderBy='startTime').execute()
+                    events = events_result.get('items', [])
+
+                    for event in events:
+                        topic = event.get('summary', 'No Title')
+                        
+                        # --- Birthdays Filter ---
+                        # Skipping events that contain birthday-related keywords
+                        if "יום הולדת" in topic or "Birthday" in topic:
+                            continue
+                        if "Valentines" in topic:
+                            continue
+                        
+                        start = event['start'].get('dateTime', event['start'].get('date'))
+                        end = event['end'].get('dateTime', event['end'].get('date'))
+                        
+                        # Handling all-day events vs timed events
+                        try:
+                            # Timed events
+                            start_dt = datetime.fromisoformat(start.replace('Z', '+00:00'))
+                            end_dt = datetime.fromisoformat(end.replace('Z', '+00:00'))
+                        except ValueError:
+                            # All-day events (format is YYYY-MM-DD)
+                            start_dt = datetime.strptime(start, "%Y-%m-%d")
+                            end_dt = datetime.strptime(end, "%Y-%m-%d")
+                        
+                        date_str = start_dt.strftime("%Y-%m-%d")
+                        self.add_event(
+                            date_str, 
+                            start_dt.strftime("%H:%M"), 
+                            end_dt.strftime("%H:%M"), 
+                            topic
+                        )
+                except HttpError as cal_error:
+                    print(f'[Error] Could not fetch events for calendar {calendar["id"]}: {cal_error}')
 
             self.data["metadata"]["last_sync"] = datetime.now().isoformat()
             self.save()
