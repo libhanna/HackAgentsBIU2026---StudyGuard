@@ -17,6 +17,7 @@
 <script setup>
 import {onMounted, ref} from 'vue';
 import {TransitionGroup} from 'vue';
+import { toast } from 'vue-sonner'
 
 const messages = ref([]);
 const message =  ref('');
@@ -27,12 +28,35 @@ onMounted(() => {
     }, 500);
 })
 
-const sendMessage = () => {
-    if (message.value.trim()) {
-        messages.value.push({text: message.value, sender: 'user'});
+const sendMessage = async () => {
+    const messageText = message.value.trim();
+    if (messageText) {
+        messages.value.push({text: messageText, sender: 'user'});
         message.value = '';
+
+        try {
+            const res = await fetch("http://localhost:5000/sendMessage", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "include",
+                body: JSON.stringify({ message: messageText })
+            });
+            
+            if (!res.ok) {
+                throw new Error(`Server error: ${res.status}`);
+            }
+            
+            const data = await res.json();
+            messages.value.push({text: data.message, sender: 'bot'});
+        } catch (error) {
+            toast.error(`Error: ${error.message}`);
+            console.error('Error sending message:', error);
+        }
     }
 }
+
 </script>
 
 <style scoped>

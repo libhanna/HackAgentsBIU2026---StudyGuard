@@ -43,7 +43,7 @@ class CalendarDB:
             json.dump(self.data, f, ensure_ascii=False, indent=4)
 
     def sync_with_google(self):
-        """Authenticates with Google and fetches all of today's events."""
+        """Authenticates with Google and fetches all of today's events, filtering out birthdays."""
         print("\n[System] Connecting to Google Calendar...")
         creds = None
         
@@ -63,13 +63,13 @@ class CalendarDB:
         try:
             service = build('calendar', 'v3', credentials=creds)
 
-            # Fetch events from the START of today (00:00) instead of current time
+            # Fetch events from the START of today (00:00)
             today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0).isoformat() + 'Z'
-            print(f"[System] Fetching all events for today...")
+            print(f"[System] Fetching all events for today (filtering birthdays)...")
             
             events_result = service.events().list(calendarId='primary', 
                                                 timeMin=today_start,
-                                                maxResults=50, 
+                                                maxResults=10, 
                                                 singleEvents=True,
                                                 orderBy='startTime').execute()
             events = events_result.get('items', [])
@@ -78,19 +78,33 @@ class CalendarDB:
             self.data["events"] = {} 
 
             for event in events:
+                topic = event.get('summary', 'No Title')
+                
+                # --- Birthdays Filter ---
+                # Skipping events that contain birthday-related keywords
+                if "יום הולדת" in topic or "Birthday" in topic:
+                    continue
+                if "Valentines" in topic:
+                    continue
                 start = event['start'].get('dateTime', event['start'].get('date'))
                 end = event['end'].get('dateTime', event['end'].get('date'))
                 
-                # Parsing Google format to our local format
-                start_dt = datetime.fromisoformat(start.replace('Z', '+00:00'))
-                end_dt = datetime.fromisoformat(end.replace('Z', '+00:00'))
+                # Handling all-day events vs timed events
+                try:
+                    # Timed events
+                    start_dt = datetime.fromisoformat(start.replace('Z', '+00:00'))
+                    end_dt = datetime.fromisoformat(end.replace('Z', '+00:00'))
+                except ValueError:
+                    # All-day events (format is YYYY-MM-DD)
+                    start_dt = datetime.strptime(start, "%Y-%m-%d")
+                    end_dt = datetime.strptime(end, "%Y-%m-%d")
                 
                 date_str = start_dt.strftime("%Y-%m-%d")
                 self.add_event(
                     date_str, 
                     start_dt.strftime("%H:%M"), 
                     end_dt.strftime("%H:%M"), 
-                    event.get('summary', 'No Title')
+                    topic
                 )
 
             self.data["metadata"]["last_sync"] = datetime.now().isoformat()
