@@ -4,7 +4,7 @@ from selenium import webdriver
 import time
 
 def is_chrome_in_front():
-    #  מקבל את החלון הפעיל כרגע במערכת ההפעלה
+    # מקבל את החלון הפעיל כרגע במערכת ההפעלה
     active_window = gw.getActiveWindow()
     if active_window is None:
         return False
