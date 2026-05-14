@@ -1,27 +1,47 @@
-"""Example agent client that calls the MCP tool."""
+"""Agno agent that connects to an MCP server and calls a model through API."""
 
 import asyncio
 import sys
+from pathlib import Path
 
-from mcp import ClientSession, StdioServerParameters
-from mcp.client.stdio import stdio_client
+from dotenv import load_dotenv
+from agno.agent import Agent
+from agno.models.openai import OpenAIChat
+from agno.tools.mcp import MCPTools
+from mcp import StdioServerParameters
 
 
-async def run() -> None:
+BASE_DIR = Path(__file__).resolve().parent
+load_dotenv(BASE_DIR / ".env")
+
+
+async def run_agent() -> None:
     server_params = StdioServerParameters(
         command=sys.executable,
-        args=["-m", "agent_skeleton.server"],
+        args=["-m", "server"],
+        cwd=str(BASE_DIR),
     )
 
-    async with stdio_client(server_params) as (read, write):
-        async with ClientSession(read, write) as session:
-            await session.initialize()
-            result = await session.call_tool("ping", {"message": "hi"})
-            print(result)
+    async with MCPTools(server_params=server_params) as mcp_tools:
+        agent = Agent(
+            name="Basic MCP Agent",
+            model=OpenAIChat(id="gpt-4o-mini"),
+            tools=[mcp_tools],
+            instructions=[
+                "You are a basic agent.",
+                "Use the available MCP tools when they are useful.",
+                "Do not fake tool results.",
+            ],
+            markdown=True,
+        )
+
+        await agent.aprint_response(
+            "Call the ping tool with the message 'hi', then explain what happened."
+        )
 
 
 def main() -> None:
-    asyncio.run(run())
+    asyncio.run(run_agent())
 
 
 if __name__ == "__main__":

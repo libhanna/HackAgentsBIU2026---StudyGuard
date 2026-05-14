@@ -1,4 +1,4 @@
-"""MCP server with example tool."""
+"""MCP server with one example tool."""
 
 from mcp.server.fastmcp import FastMCP
 
@@ -7,7 +7,7 @@ mcp = FastMCP("agent-skeleton")
 
 @mcp.tool()
 def ping(message: str = "hello") -> str:
-    """Return a message to verify tool wiring."""
+    """Simple MCP tool used to verify that the agent can call tools."""
     return f"pong: {message}"
 
 
