@@ -27,10 +27,32 @@ onMounted(() => {
     }, 500);
 })
 
-const sendMessage = () => {
-    if (message.value.trim()) {
-        messages.value.push({text: message.value, sender: 'user'});
+const sendMessage = async () => {
+    const messageText = message.value.trim();
+    if (messageText) {
+        messages.value.push({text: messageText, sender: 'user'});
         message.value = '';
+
+        try {
+            const res = await fetch("http://localhost:5000/sendMessage", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "include",
+                body: JSON.stringify({ message: messageText })
+            });
+            
+            if (!res.ok) {
+                throw new Error(`Server error: ${res.status}`);
+            }
+            
+            const data = await res.json();
+            messages.value.push({text: data.response, sender: 'bot'});
+        } catch (error) {
+            messages.value.push({text: `Error: ${error.message}`, sender: 'bot'});
+            console.error('Error sending message:', error);
+        }
     }
 }
 </script>
