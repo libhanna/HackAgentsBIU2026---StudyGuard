@@ -49,7 +49,7 @@ const sendMessage = async () => {
             }
             
             const data = await res.json();
-            messages.value.push({text: data.response, sender: 'bot'});
+            messages.value.push({text: data.message, sender: 'bot'});
         } catch (error) {
             toast.error(`Error: ${error.message}`);
             console.error('Error sending message:', error);

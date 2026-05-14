@@ -10,7 +10,15 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*", "methods": ["GET", "POST", "OPTIONS"]}})
+
+CORS(
+    app,
+    origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],
+    supports_credentials=True,
+)
 db = CalendarDB()
 
 # הגדרת הלקוח של OpenRouter (השתמש במפתח שלך מה-.env)
@@ -51,8 +59,12 @@ def get_new_message():
     return jsonify({"has_new": False, "message": None}), 200
 
 # 5. /sendMessage - מעבד את ההודעה ומחזיר רק את שמות האירועים מופרדים בפסיק
-@app.route('/sendMessage', methods=['POST'])
+@app.route('/sendMessage', methods=['POST', 'OPTIONS'])
 def send_message():
+
+    if request.method == "OPTIONS":
+        return "", 204
+    
     data = request.json
     user_msg = data.get("message", "")
     
@@ -86,8 +98,8 @@ def send_message():
         # שמירת התשובה ב-DB
         db.add_message(ai_text)
         
-        # החזרת התשובה בפורמט שביקשת (למשל: "pizza party, learning for cs course")
-        return ai_text, 200, {'Content-Type': 'text/plain; charset=utf-8'}
+        # החזרת התשובה בפורמט JSON עם שדה message
+        return jsonify({"message": ai_text}), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
