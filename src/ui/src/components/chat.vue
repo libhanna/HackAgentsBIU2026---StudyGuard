@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="main-container">
     <div class="chat-container">
         <input class="chat-input" type="text" v-model="message"  @keyup.enter="sendMessage" placeholder="Please enter your question here..." />
         <button class="chat-button-send" @click="sendMessage">Send</button>
@@ -60,10 +60,11 @@ const sendMessage = async () => {
 </script>
 
 <style scoped>
+.main-container {position: relative; top: 80px;}
 .chat-container { max-height: 200px;}
 .chat-input {height: 40px; width: 450px; border-radius: 6px;  border: none; outline: none; padding: 2px 10px; font-size: 12pt; }
 .chat-button-send {background: #84c1ff; border-radius: 4px; color: white; border: none; outline: none; height: 40px; width: 80px; margin-left: 1rem; cursor: pointer;}
-.messages-container { display: flex; padding-right: 10px; margin-top: 10px; flex-direction: column; perspective: 1000px; max-height: calc(100vh - 80px); overflow-y: auto; }
+.messages-container { display: flex; padding-right: 10px; margin-top: 10px; flex-direction: column; perspective: 1000px; max-height: calc(100vh - 180px); overflow-y: auto; }
 .user-message { background: #f0f0f0; color: #333; align-self: flex-end; }
 .bot-message { background: #84c1ff; color: white; align-self: flex-start; }
 .message { margin: 10px 0; padding: 10px; font-size: 12pt; width: 400px; border-radius: 6px; word-wrap: break-word; }
