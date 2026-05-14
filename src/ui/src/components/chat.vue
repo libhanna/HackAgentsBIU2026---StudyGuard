@@ -17,6 +17,7 @@
 <script setup>
 import {onMounted, ref} from 'vue';
 import {TransitionGroup} from 'vue';
+import { toast } from 'vue-sonner'
 
 const messages = ref([]);
 const message =  ref('');
@@ -50,11 +51,12 @@ const sendMessage = async () => {
             const data = await res.json();
             messages.value.push({text: data.response, sender: 'bot'});
         } catch (error) {
-            messages.value.push({text: `Error: ${error.message}`, sender: 'bot'});
+            toast.error(`Error: ${error.message}`);
             console.error('Error sending message:', error);
         }
     }
 }
+
 </script>
 
 <style scoped>
