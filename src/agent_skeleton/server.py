@@ -1,6 +1,8 @@
 """MCP server with one example tool."""
 
 from mcp.server.fastmcp import FastMCP
+from agent_skeleton.tools.browser.start_managed_browser import start_managed_browser
+from agent_skeleton.tools.browser.close_tab import close_browser_tab_by_url
 
 mcp = FastMCP("agent-skeleton")
 
@@ -10,6 +12,10 @@ def ping(message: str = "hello") -> str:
     """Simple MCP tool used to verify that the agent can call tools."""
     return f"pong: {message}"
 
+@mcp.tool()
+def start_browser(debug_port: int = 9222) -> str:
+    """MCP tool that starts a managed browser instance."""
+    return start_managed_browser(debug_port)
 
 def main() -> None:
     mcp.run()
