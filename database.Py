@@ -18,15 +18,27 @@ class CalendarDB:
         self.data = self._load_db()
 
     def _load_db(self):
+        """Loads data from JSON and ensures all keys (events, tasks, messages) exist."""
         if os.path.exists(self.file_path):
             try:
                 with open(self.file_path, 'r', encoding='utf-8') as f:
-                    return json.load(f)
+                    content = json.load(f)
+                    # Ensure new structure for compatibility
+                    if "tasks" not in content: content["tasks"] = []
+                    if "messages" not in content: content["messages"] = []
+                    if "events" not in content: content["events"] = {}
+                    return content
             except json.JSONDecodeError:
                 pass 
-        return {"metadata": {"last_sync": None}, "events": {}}
+        return {
+            "metadata": {"last_sync": None}, 
+            "events": {}, 
+            "tasks": [], 
+            "messages": []
+        }
 
     def save(self):
+        """Saves current memory data to the JSON file."""
         with open(self.file_path, 'w', encoding='utf-8') as f:
             json.dump(self.data, f, ensure_ascii=False, indent=4)
 
@@ -51,13 +63,13 @@ class CalendarDB:
         try:
             service = build('calendar', 'v3', credentials=creds)
 
-            # FIX: Fetch events from the START of today (00:00) instead of current time
+            # Fetch events from the START of today (00:00) instead of current time
             today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0).isoformat() + 'Z'
             print(f"[System] Fetching all events for today...")
             
             events_result = service.events().list(calendarId='primary', 
                                                 timeMin=today_start,
-                                                maxResults=20, 
+                                                maxResults=50, 
                                                 singleEvents=True,
                                                 orderBy='startTime').execute()
             events = events_result.get('items', [])
@@ -89,6 +101,7 @@ class CalendarDB:
             print(f'[Error] An error occurred: {error}')
 
     def get_event_at(self, dt_object):
+        """Checks for an event at a specific time, triggers sync if needed."""
         last_sync_str = self.data["metadata"].get("last_sync")
         should_sync = False
         
@@ -113,6 +126,7 @@ class CalendarDB:
         return "Free"
 
     def add_event(self, date_str, start_t, end_t, topic):
+        """Internal function to add event to daily lists."""
         if date_str not in self.data["events"]:
             self.data["events"][date_str] = []
         
@@ -123,6 +137,34 @@ class CalendarDB:
         })
         self.save()
 
+    # --- Task and Message Functions ---
+    def add_task(self, task_text):
+        """Adds a task to the task list."""
+        self.data["tasks"].append({"task": task_text, "status": "pending"})
+        self.save()
+
+    def add_message(self, msg_text):
+        """Adds a message to the internal queue."""
+        self.data["messages"].append({
+            "text": msg_text, 
+            "timestamp": datetime.now().isoformat()
+        })
+        self.save()
+
+    def get_latest_message(self):
+        """Retrieves and removes the last message from the queue."""
+        if self.data.get("messages") and len(self.data["messages"]) > 0:
+            msg = self.data["messages"].pop()
+            self.save()
+            return msg
+        return None
+
     def clear_all(self):
-        self.data = {"metadata": {"last_sync": None}, "events": {}}
+        """Wipes the database clean."""
+        self.data = {
+            "metadata": {"last_sync": None}, 
+            "events": {},
+            "tasks": [],
+            "messages": []
+        }
         self.save()
