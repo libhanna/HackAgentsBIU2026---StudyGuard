@@ -46,8 +46,13 @@ async def run_agent() -> None:
         )
 
         await agent.aprint_response(
-            "Call the ping tool with the message 'hi', then explain what happened."
+            "use start_browser!"
         )
+
+        print("Agent is running. Press Ctrl+C to stop.")
+
+        while True:
+            await asyncio.sleep(1)
 
 
 def main() -> None:
