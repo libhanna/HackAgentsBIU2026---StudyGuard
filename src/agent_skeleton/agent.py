@@ -1,6 +1,7 @@
-"""Agno agent that connects to an MCP server and calls a model through API."""
+"""Agno agent that connects to an MCP server and calls a model through OpenRouter."""
 
 import asyncio
+import os
 import sys
 from pathlib import Path
 
@@ -18,14 +19,23 @@ load_dotenv(BASE_DIR / ".env")
 async def run_agent() -> None:
     server_params = StdioServerParameters(
         command=sys.executable,
-        args=["-m", "server"],
-        cwd=str(BASE_DIR),
+        args=[str(BASE_DIR / "server.py")],
     )
+
+    model_id = os.getenv("OPENROUTER_MODEL", "openai/gpt-4o-mini")
+    api_key = os.getenv("OPENROUTER_API_KEY")
+
+    if not api_key:
+        raise RuntimeError("Missing OPENROUTER_API_KEY in .env")
 
     async with MCPTools(server_params=server_params) as mcp_tools:
         agent = Agent(
             name="Basic MCP Agent",
-            model=OpenAIChat(id="gpt-4o-mini"),
+            model=OpenAIChat(
+                id=model_id,
+                api_key=api_key,
+                base_url="https://openrouter.ai/api/v1",
+            ),
             tools=[mcp_tools],
             instructions=[
                 "You are a basic agent.",
