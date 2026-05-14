@@ -9,13 +9,28 @@ def start_managed_browser(debug_port: int = 9222) -> str:
     This opens a separate browser profile controlled by the study agent.
     """
 
-    browser_path = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
+    # רשימת נתיבים פוטנציאליים לכרום
+    chrome_paths = [
+        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+        r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+        os.path.expandvars(r"%LOCALAPPDATA%\Google\Chrome\Application\chrome.exe")
+    ]
 
-    if not Path(browser_path).exists():
-        browser_path = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
+    browser_path = None
 
-    if not Path(browser_path).exists():
-        return "Could not find Chrome or Edge executable."
+    # חיפוש כרום בנתיבים שהגדרנו
+    for path in chrome_paths:
+        if Path(path).exists():
+            browser_path = path
+            break
+
+    # אם כרום לא נמצא בשום מקום, ננסה את Edge כברירת מחדל אחרונה
+    if not browser_path:
+        edge_path = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
+        if Path(edge_path).exists():
+            browser_path = edge_path
+        else:
+            return "Could not find Chrome or Edge executable."
 
     base_dir = Path(__file__).resolve().parent
     profile_dir = base_dir / ".managed-browser-profile"
