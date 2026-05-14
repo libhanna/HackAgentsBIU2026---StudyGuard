@@ -62,7 +62,7 @@ def is_chrome_in_front():
     # בודק אם המילה "Google Chrome" מופיעה בכותרת החלון הפעיל
     return "Google Chrome" in active_window.title
 
-#   --- הרצה לדוגמה ---
+#  --- הרצה לדוגמה ---
 # start_managed_browser()
 # while (1):
 #     time.sleep(10)
