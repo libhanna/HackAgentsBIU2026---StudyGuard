@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 import pygetwindow as gw
 import time
-from tools.browser.start_managed_browser import start_managed_browser
+from agent_skeleton.tools.browser.start_managed_browser import start_managed_browser
 import requests
 
 def get_active_tab_metadata(port=9222):

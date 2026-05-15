@@ -1,11 +1,11 @@
 """MCP server with one example tool."""
 
 from mcp.server.fastmcp import FastMCP
-from tools.browser.start_managed_browser import start_managed_browser
-from tools.browser.close_tab import close_browser_tab_by_url
-from tools.browser.get_current_chrome_metadata import get_active_tab_metadata
-from tools.get_biu_assignment_tasks import get_biu_assignment_tasks
-from tools.browser.filter import apply_visual_effect_to_current_tab
+from agent_skeleton.tools.browser.start_managed_browser import start_managed_browser
+from agent_skeleton.tools.browser.close_tab import close_browser_tab_by_url
+from agent_skeleton.tools.browser.get_current_chrome_metadata import get_active_tab_metadata
+from agent_skeleton.tools.get_biu_assignment_tasks import get_biu_assignment_tasks
+from agent_skeleton.tools.browser.filter import apply_visual_effect_to_current_tab
 
 mcp = FastMCP("agent-skeleton")
 

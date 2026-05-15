@@ -1,15 +1,31 @@
 import os
 import subprocess
+import time
+import urllib.request
 from pathlib import Path
+
+
+def is_managed_browser_running(debug_port: int = 9222) -> bool:
+    try:
+        with urllib.request.urlopen(
+            f"http://127.0.0.1:{debug_port}/json/version",
+            timeout=1
+        ) as response:
+            return response.status == 200
+    except Exception:
+        return False
+
 
 def start_managed_browser(debug_port: int = 9222) -> str:
     """Start a managed browser instance with remote debugging enabled.
 
-    Use this tool before listing or closing browser tabs.
-    This opens a separate browser profile controlled by the study agent.
+    This function is idempotent:
+    if the managed browser is already running, it will not open another window.
     """
 
-    # רשימת נתיבים פוטנציאליים לכרום
+    if is_managed_browser_running(debug_port):
+        return f"Managed browser is already running on debug port {debug_port}."
+
     chrome_paths = [
         r"C:\Program Files\Google\Chrome\Application\chrome.exe",
         r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
@@ -18,18 +34,23 @@ def start_managed_browser(debug_port: int = 9222) -> str:
 
     browser_path = None
 
-    # חיפוש כרום בנתיבים שהגדרנו
     for path in chrome_paths:
         if Path(path).exists():
             browser_path = path
             break
 
-    # אם כרום לא נמצא בשום מקום, ננסה את Edge כברירת מחדל אחרונה
     if not browser_path:
-        edge_path = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
-        if Path(edge_path).exists():
-            browser_path = edge_path
-        else:
+        edge_paths = [
+            r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
+            r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+        ]
+
+        for path in edge_paths:
+            if Path(path).exists():
+                browser_path = path
+                break
+
+        if not browser_path:
             return "Could not find Chrome or Edge executable."
 
     base_dir = Path(__file__).resolve().parent
@@ -40,7 +61,6 @@ def start_managed_browser(debug_port: int = 9222) -> str:
         browser_path,
         f"--remote-debugging-port={debug_port}",
         f"--user-data-dir={profile_dir}",
-        "--new-window",
         "about:blank",
     ]
 
@@ -54,7 +74,15 @@ def start_managed_browser(debug_port: int = 9222) -> str:
     except Exception as e:
         return f"Failed to start managed browser: {e}"
 
+    for _ in range(20):
+        if is_managed_browser_running(debug_port):
+            return (
+                f"Managed browser started on debug port {debug_port}. "
+                f"Profile directory: {profile_dir}"
+            )
+        time.sleep(0.25)
+
     return (
-        f"Managed browser started on debug port {debug_port}. "
+        f"Browser process was started, but DevTools did not respond on port {debug_port}. "
         f"Profile directory: {profile_dir}"
     )
