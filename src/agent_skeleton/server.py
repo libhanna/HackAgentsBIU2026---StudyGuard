@@ -7,8 +7,28 @@ from agent_skeleton.tools.browser.get_current_chrome_metadata import get_active_
 from agent_skeleton.tools.get_biu_assignment_tasks import get_biu_assignment_tasks
 from agent_skeleton.tools.browser.filter import apply_visual_effect_to_current_tab
 
-mcp = FastMCP("agent-skeleton")
+import sys
+import os
+from datetime import datetime
 
+current_dir = os.path.dirname(__file__)
+grandpa_parallel_dir = os.path.abspath(os.path.join(current_dir, '..', '..'))
+sys.path.append(grandpa_parallel_dir)
+
+from database import CalendarDB
+
+mcp = FastMCP("agent-skeleton")
+# אתחול ה-Database בתוך השרת
+db = CalendarDB()
+
+@mcp.tool()
+def get_current_calendar_event() -> str:
+    """
+    Checks the user's Google Calendar and returns the topic of the current event.
+    Returns 'Free' if no event is scheduled.
+    """
+    now = datetime.now()
+    return db.get_event_at(now)
 
 @mcp.tool()
 def ping(message: str = "hello") -> str:
@@ -37,7 +57,7 @@ def close_tab(url_contains: str, debug_port: int = 9222) -> str:
 
 @mcp.tool()
 def get_current_tab_metadata(debug_port: int = 9222) -> dict:
-    """MCP tool that get the active browser tab."""
+    """MCP tool that get the active browser tab metadata."""
     return get_active_tab_metadata(debug_port)
 
 def main() -> None:

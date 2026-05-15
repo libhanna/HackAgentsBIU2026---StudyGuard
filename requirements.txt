@@ -7,3 +7,7 @@ requests
 icalendar
 openai
 bs4
+google
+google-cloud-core
+google_auth_oauthlib
+google-api-python-client
