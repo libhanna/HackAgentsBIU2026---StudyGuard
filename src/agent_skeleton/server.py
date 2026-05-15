@@ -5,6 +5,7 @@ from tools.browser.start_managed_browser import start_managed_browser
 from tools.browser.close_tab import close_browser_tab_by_url
 from tools.browser.get_current_chrome_metadata import get_active_tab_metadata
 from tools.get_biu_assignment_tasks import get_biu_assignment_tasks
+from tools.tts import play_tough_voice
 from tools.browser.filter import apply_visual_effect_to_current_tab
 
 import sys
@@ -59,6 +60,11 @@ def close_tab(url_contains: str, debug_port: int = 9222) -> str:
 def get_current_tab_metadata(debug_port: int = 9222) -> dict:
     """MCP tool that get the active browser tab metadata."""
     return get_active_tab_metadata(debug_port)
+
+@mcp.tool()
+async def play_text(text, toughness_level=1.0):
+    """MCP tool that play text Hebrew/English with toughness_level between [0,2]."""
+    return await play_tough_voice(text,toughness_level)
 
 def main() -> None:
     mcp.run()
