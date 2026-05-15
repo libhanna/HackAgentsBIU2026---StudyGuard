@@ -20,6 +20,8 @@ from agent_skeleton.tools.browser.close_tab import close_browser_tab_by_url
 from agent_skeleton.tools.browser.get_current_chrome_metadata import get_active_tab_metadata
 from agent_skeleton.tools.get_biu_assignment_tasks import get_biu_assignment_tasks
 from agent_skeleton.tools.browser.filter import apply_visual_effect_to_current_tab
+from agent_skeleton.tools.browser.start_managed_browser import start_managed_browser
+from agent_skeleton.tools.browser.open_tab import open_tab as open_tab_impl
 
 from database import CalendarDB
 from messages_db import MessagesDB
@@ -64,6 +66,21 @@ def apply_filter(effect: str, debug_port: int = 9222) -> str:
 def close_tab(url_contains: str, debug_port: int = 9222) -> str:
     """MCP tool that closes a browser tab whose URL contains the given text."""
     return close_browser_tab_by_url(url_contains, debug_port)
+
+
+@mcp.tool()
+async def initialize_study_guard_ui(debug_port: int = 9222) -> dict:
+    start_result = start_managed_browser(debug_port=debug_port)
+    tab_result = await open_tab_impl(
+        url="http://localhost:5173",
+        debug_port=debug_port
+    )
+
+    return {
+        "success": True,
+        "start_browser": start_result,
+        "open_tab": tab_result
+    }
 
 @mcp.tool()
 def get_current_tab_metadata(debug_port: int = 9222) -> dict:
