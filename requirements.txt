@@ -11,3 +11,6 @@ google
 google-cloud-core
 google_auth_oauthlib
 google-api-python-client
+flask
+flask-cors
+websocket-client
