@@ -68,51 +68,35 @@ def get_new_message():
         "messages": []
     }), 200
 
-# 5. /sendMessage - מעבד את ההודעה ומחזיר רק את שמות האירועים מופרדים בפסיק
 @app.route('/sendMessage', methods=['POST', 'OPTIONS'])
 def send_message():
-
     if request.method == "OPTIONS":
         return "", 204
-    
-    data = request.json
-    user_msg = data.get("message", "")
-    
+
+    data = request.get_json() or {}
+    user_msg = data.get("message", "").strip()
+    conversation_id = data.get("conversation_id") or data.get("conversationId")
+
     if not user_msg:
         return jsonify({"error": "No message provided"}), 400
 
     try:
-        # שליפת הלו"ז העדכני
-        calendar_data = db.data.get("events", {})
-        
-        # פנייה ל-AI כדי שינתח את הבקשה
-        response = client.chat.completions.create(
-             model="openai/gpt-4o-mini",
-             messages=[
-                 {
-                      "role": "system", 
-                      "content": (
-                         f"You are StudyGuard, a professional AI assistant. Use this calendar data: {calendar_data}. "
-                         "STRICT RULES: "
-                         "1. Always respond in ENGLISH only. "
-                         "2. If the user asks about their schedule, provide the event topics separated by commas. "
-                         "3. Keep your responses concise and professional."
-            )
-        },
-        {"role": "user", "content": user_msg}
-    ]
-    )
+        saved_message = messages_db.add_user_message(
+            text=user_msg,
+            conversation_id=conversation_id,
+            metadata={
+                "source": "vue-ui"
+            }
+        )
 
-        ai_text = response.choices[0].message.content
-        
-        # שמירת התשובה ב-DB
-        db.add_message(ai_text)
-        
-        # החזרת התשובה בפורמט JSON עם שדה message
-        return jsonify({"message": ai_text}), 200
+        return jsonify({
+            "success": True,
+            "queued_for_agent": True,
+            "message": saved_message
+        }), 202
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
+    
 if __name__ == '__main__':
     app.run(debug=True)

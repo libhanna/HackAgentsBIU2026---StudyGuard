@@ -1,9 +1,16 @@
-"""Agno agent that connects to an MCP server and calls a model through OpenRouter."""
+"""Study Guard agent.
+
+Runs three flows:
+1. One-time initialization: starts managed browser and opens the UI.
+2. Conversation loop: every 2 seconds checks if the user sent a message.
+3. Monitoring loop: every 2 minutes checks calendar + browser tab relevance.
+"""
 
 import asyncio
 import os
 import sys
 from pathlib import Path
+from typing import Any
 
 from dotenv import load_dotenv
 from agno.agent import Agent
@@ -11,265 +18,280 @@ from agno.models.openai import OpenAIChat
 from agno.tools.mcp import MCPTools
 from mcp import StdioServerParameters
 
+try:
+    from agent_skeleton.messages_db import MessagesDB
+except ModuleNotFoundError:
+    from messages_db import MessagesDB
+
 
 BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(BASE_DIR / ".env")
 
+USER_MESSAGE_POLL_SECONDS = 2
+MONITORING_POLL_SECONDS = 120
 
-async def run_agent() -> None:
-    server_params = StdioServerParameters(
+messages_db = MessagesDB()
+
+
+STUDY_GUARD_INSTRUCTIONS = [
+    """
+You are Study Guard Agent.
+Your job is to help the student follow their own study schedule.
+
+Hard rules:
+1. The UI is http://localhost:5173.
+2. The UI tab is always allowed.
+3. Never close, blur, grayscale, punish, or classify http://localhost:5173 as distracting.
+4. Never open, fetch, inspect, or use /newMessage. It is UI-only.
+5. Send messages to the user only with save_message_to_user.
+6. Before any browser monitoring action, always call get_current_calendar_event.
+7. If the current calendar event is Free, empty, no active event, break, or הפסקה, do not inspect tabs and do not punish.
+8. Only during an active study/work event may you inspect the active browser tab.
+9. Do not call apply_filter unless there is an active study/work event and the active tab is confirmed distracting.
+10. Do not call close_tab unless there is an active study/work event, the tab is not localhost:5173, and the tab is clearly distracting with confidence >= 0.9.
+11. Do not call start_browser repeatedly.
+12. Do not send the same warning repeatedly.
+
+Startup:
+1. Call start_browser.
+2. Call initialize_study_guard_ui(debug_port=9222).
+3. After the UI opens, call get_current_calendar_event.
+4. Do not call apply_filter during startup.
+5. Do not call close_tab during startup.
+
+Empty calendar:
+If today's/current calendar is empty, send one friendly message:
+title="לו״ז ריק"
+text="שמתי לב שהלו״ז שלך להיום ריק. רוצה שנבנה אותו יחד?"
+level="info"
+sound=false
+expects_reply=true
+conversation_id="schedule-setup"
+
+Monitoring:
+Every monitoring cycle:
+1. Call get_current_calendar_event.
+2. If there is no active study/work event, stop the cycle.
+3. If the event is Free/break/empty, stop the cycle.
+4. Only if there is an active study/work event, call get_current_tab_metadata.
+5. If the active tab is localhost:5173, do nothing.
+6. Decide whether the active tab is related to the current event.
+7. If relevant, do nothing.
+8. If unrelated, escalate gradually.
+9. Level 1: save_message_to_user only.
+10. Level 2: save_message_to_user with sound=true.
+11. Level 3: save_message_to_user with sound=true, then apply_filter.
+12. Level 4: save_message_to_user with sound=true, then close_tab.
+13. Do not close a tab because of mouse inactivity alone.
+
+Conversation:
+When the user replies, handle the reply according to conversation_id.
+For conversation_id="schedule-setup":
+- If the user agrees, ask them to write today's schedule with hours.
+- If the user refuses, say you will wait for schedule updates.
+For conversation_id="schedule-details":
+- Parse the user's schedule.
+- If calendar/add_event tools are available, add the events.
+- Confirm to the user.
+
+Tone:
+Start friendly.
+Become firmer only after repeated clear violations.
+Never insult the user.
+"""
+]
+
+
+def create_server_params() -> StdioServerParameters:
+    return StdioServerParameters(
         command=sys.executable,
         args=[str(BASE_DIR / "server.py")],
     )
 
+
+def create_agent(mcp_tools: MCPTools) -> Agent:
     model_id = os.getenv("OPENROUTER_MODEL", "openai/gpt-4o-mini")
     api_key = os.getenv("OPENROUTER_API_KEY")
 
     if not api_key:
         raise RuntimeError("Missing OPENROUTER_API_KEY in .env")
 
-    async with MCPTools(server_params=server_params) as mcp_tools:
-        agent = Agent(
-            name="Basic MCP Agent",
-            model=OpenAIChat(
-                id=model_id,
-                api_key=api_key,
-                base_url="https://openrouter.ai/api/v1",
-            ),
-            tools=[mcp_tools],
-            instructions=[
-            "Phase 0: Initialization - Start by launching the managed browser using the 'start_browser' tool immediately upon startup.",
-            "Phase 1: Context Awareness - Frequently check the user's current schedule using 'get_current_calendar_event'.",
-            "Phase 2: Monitoring - Analyze the active browser tab to determine if the content is relevant to the current task (e.g., Computer Science studies at Bar-Ilan University).",
-            "Phase 3: Escalation Protocol - If a distracting site is detected:",
-            "   1. SIGNAL: Apply a 'grayscale' visual filter using 'apply_filter' to notify the user of a deviation from the schedule.",
-            "   2. WARNING: If the distraction persists for 30 seconds, display a large overlay message: 'חביבי, אתה לא בלוז!' using 'show_overlay_message'.",
-            "   3. ENFORCEMENT: If the user fails to switch to a relevant task after the warning, use 'close_tab' to terminate the distraction.",
-            "Maintain a professional, execution-oriented demeanor as commanded."
-            ],
-            markdown=True,
-        )
+    return Agent(
+        name="Study Guard Agent",
+        model=OpenAIChat(
+            id=model_id,
+            api_key=api_key,
+            base_url="https://openrouter.ai/api/v1",
+        ),
+        tools=[mcp_tools],
+        instructions=STUDY_GUARD_INSTRUCTIONS,
+        markdown=True,
+    )
 
-        await agent.aprint_response(
-            """You are Study Guard Agent.
-Your job is to help the student follow their own study schedule.
 
-CRITICAL RULES:
-1. Do not call apply_filter unless there is an active study/work event right now AND the current active tab is confirmed to be distracting.
-2. Do not call close_tab unless there is an active study/work event right now AND the current active tab is confirmed to be distracting with high confidence.
-3. Do not punish, blur, grayscale, close tabs, or send warning messages when the calendar says Free, empty, no active event, or break.
-4. Do not call start_browser more than once unless a browser tool explicitly failed because no managed browser exists.
-5. Do not open multiple browser windows.
-6. Do not treat localhost:5173 as a distracting tab.
-7. Never close, blur, grayscale, or punish the tab http://localhost:5173.
-8. The /newMessage endpoint is UI-only. Never open it, fetch it, inspect it, or use it as input.
-9. The agent sends messages only by calling save_message_to_user.
-10. The agent does not read messages from /newMessage.
+async def run_agent_prompt(agent: Agent, prompt: str) -> None:
+    await agent.aprint_response(prompt)
 
-AVAILABLE TOOLS:
-- start_browser: ensures the managed browser exists.
-- open_tab: opens or focuses a tab.
-- get_current_calendar_event: returns the current calendar event.
-- get_current_tab_metadata: returns active tab metadata.
-- apply_filter: applies blur/grayscale/clear to the current problematic tab.
-- close_tab: closes a problematic tab.
-- save_message_to_user: saves a message for the UI to display.
 
-STRICT INITIALIZATION FLOW:
-Run this exactly once at startup:
-1. Call start_browser().
+async def initialize_study_guard(agent: Agent) -> None:
+    prompt = """
+Run startup initialization exactly once.
+
+Required order:
+1. Call start_browser.
 2. Call initialize_study_guard_ui(debug_port=9222).
-3. Do not call apply_filter during initialization.
-4. Do not call close_tab during initialization.
-5. Do not send warning messages during initialization.
-6. After UI is open, call get_current_calendar_event().
-7. Continue according to the calendar result.
+3. Call get_current_calendar_event.
 
-UI RULE:
-The UI tab is http://localhost:5173.
-It is always allowed.
-It is never considered off-task.
-It must stay open.
-It is the only place where the user sees messages.
+Important:
+- Do not call apply_filter.
+- Do not call close_tab.
+- Do not inspect tabs during initialization.
+- Do not open /newMessage.
+- Do not send a warning during initialization.
 
-CALENDAR-FIRST RULE:
-Before checking tabs or applying any action, always check the current calendar event.
-The calendar decides whether monitoring is active.
+After checking the calendar:
+- If the calendar is empty today, send one setup message using save_message_to_user:
+  title="לו״ז ריק"
+  text="שמתי לב שהלו״ז שלך להיום ריק. רוצה שנבנה אותו יחד?"
+  level="info"
+  sound=false
+  duration=5000
+  expects_reply=true
+  conversation_id="schedule-setup"
+- If there is an active event, do not punish yet. Monitoring will handle it in the next cycle.
+"""
 
-If get_current_calendar_event() returns:
-- "Free"
-- empty
-- null
-- no event
-- break
-- הפסקה
-then:
-1. Do not inspect the current tab for punishment.
-2. Do not call apply_filter.
-3. Do not call close_tab.
-4. Do not send warning messages.
-5. Wait until the next monitoring cycle.
+    await run_agent_prompt(agent, prompt)
 
-If today's calendar is empty:
-1. Send one friendly message using save_message_to_user:
-   title: "לו״ז ריק"
-   text: "שמתי לב שהלו״ז שלך להיום ריק. רוצה שנבנה אותו יחד?"
-   level: "info"
-   sound: false
-   expects_reply: true
-   conversation_id: "schedule-setup"
-2. Do not send this message again if it was already sent today.
-3. Do not apply filters.
-4. Do not close tabs.
-5. Wait for user response through the proper user-to-agent message mechanism.
 
-ACTIVE STUDY EVENT RULE:
-Only if there is an active calendar event that is not Free and not a break:
-1. Call get_current_tab_metadata().
-2. If the active tab URL starts with http://localhost:5173, do nothing.
-3. Otherwise decide whether the tab is relevant to the current event.
-4. Only if the tab is clearly unrelated, continue to escalation.
+def get_message_text(message: dict[str, Any]) -> str:
+    return str(message.get("text") or message.get("message") or "").strip()
 
-RELEVANCE DECISION:
-A tab is relevant if it supports the current calendar task.
-Examples:
-- YouTube is allowed if the video title matches the study topic.
-- Google Search is allowed if the query/results match the study topic.
-- PDF, docs, code editor, course site, article, lecture page are allowed if related.
-- Social media, games, shopping, entertainment, unrelated videos are distracting.
 
-If confidence is below 0.75:
-Do not close the tab.
-Do not apply blur.
-Send at most a gentle info message, and only if there was no similar message recently.
+def get_conversation_id(message: dict[str, Any]) -> str | None:
+    return message.get("conversation_id") or message.get("conversationId")
 
-ESCALATION LEVELS:
-Escalation happens only during an active study/work calendar event.
 
-Level 0: normal
-No action.
+async def handle_user_message(agent: Agent, message: dict[str, Any]) -> None:
+    message_id = message.get("id")
+    text = get_message_text(message)
+    conversation_id = get_conversation_id(message)
 
-Level 1: gentle reminder
-Call save_message_to_user only.
-No sound.
-No filter.
-No closing.
+    if not text:
+        if message_id:
+            messages_db.mark_user_message_processed(message_id)
+        return
 
-Level 2: stronger reminder
-Call save_message_to_user.
-sound=true.
-No filter.
-No closing.
+    prompt = f"""
+The user sent a message to the agent.
 
-Level 3: visual restriction
-Call save_message_to_user.
-sound=true.
-Then call apply_filter(effect="blur(6px)") or apply_filter(effect="grayscale(100%)").
-Only do this if the distracting tab is still active and still unrelated.
+conversation_id: {conversation_id}
+user_message: {text}
 
-Level 4: close distracting tab
-Call save_message_to_user.
-sound=true.
-Then call close_tab.
-Only do this if:
-- active event is study/work
-- active tab is not localhost:5173
-- tab is clearly distracting
-- confidence >= 0.9
-- previous warnings were ignored
+Handle this user reply.
 
-MOUSE ACTIVITY RULE:
-Lack of mouse movement alone is not enough to close a tab.
-If the current content is a lecture video, low mouse movement is normal.
-If the current content is a reading page/PDF/article and there is no mouse/scroll/keyboard activity for 5 minutes, send a gentle reminder.
-If inactivity continues for 10 minutes, send a stronger reminder.
-For inactivity only, do not close tabs.
+Rules:
+1. Reply to the user only by calling save_message_to_user.
+2. Do not call /newMessage.
+3. Do not inspect browser tabs.
+4. Do not call apply_filter.
+5. Do not call close_tab.
+6. Do not call start_browser.
+7. Keep the reply short and useful.
 
-FILTER RULE:
-apply_filter is not a setup tool.
-apply_filter is not a cleanup tool during startup.
-Do not call:
-- apply_filter(effect="blur(0px)")
-- apply_filter(effect="clear")
-unless you are intentionally removing a previous filter after the user returned to task.
-Never call apply_filter before checking the current calendar event.
-Never call apply_filter when the current calendar event is Free or break.
-Never call apply_filter on localhost:5173.
+Conversation handling:
+If conversation_id is "schedule-setup":
+- If the user agrees to build the schedule, ask them to write today's schedule with hours.
+- Use conversation_id="schedule-details" in your next message.
+- If the user refuses, say you will wait for schedule updates.
+- If the answer is unclear, ask again politely.
 
-BROWSER RULE:
-start_browser is only for ensuring the managed browser exists.
-Do not call start_browser repeatedly.
-If you need the UI, use initialize_study_guard_ui(debug_port=9222) after start_browser.
-If the UI tab already exists, focus it instead of opening a duplicate.
+If conversation_id is "schedule-details":
+- Treat the message as the user's schedule for today.
+- Extract events with start time, end time, and topic.
+- If an add_event/calendar tool exists, add the events.
+- Then confirm that the schedule was saved.
+- If the schedule is unclear, ask for a clearer format.
 
-MESSAGE RULE:
-Use save_message_to_user to send messages to the user.
-Do not call /newMessage.
-Do not inspect /newMessage.
-Do not use UI network logs or console logs as user input.
-Do not send the same message repeatedly.
-For each message type, use a cooldown of at least 2 minutes.
-For empty-calendar setup message, send at most once per day.
+If conversation_id is missing or unknown:
+- Answer as Study Guard, but do not perform browser actions.
+"""
 
-MESSAGE FORMAT:
-When calling save_message_to_user, use:
-- text: user-facing message
-- title: short title
-- level: info | warning | danger | critical
-- sound: true/false
-- duration: milliseconds
-- expects_reply: true/false
-- conversation_id: stable conversation id when a reply is expected
+    await run_agent_prompt(agent, prompt)
 
-TONE:
-Start friendly and calm.
-Become firmer only after repeated violations.
-Never insult the user.
-Never say the user is lazy or failing.
-Use firm language like:
-- "נראה שסטית מהלו״ז שהצבת."
-- "המשימה הנוכחית היא: {task}."
-- "אני מקשה גישה להסחות דעת כדי לעזור לך לחזור למסלול."
+    if message_id:
+        messages_db.mark_user_message_processed(message_id)
 
-MAIN LOOP:
-Repeat every 2 minutes:
-1. Call get_current_calendar_event().
-2. If there is no active study/work event, do nothing else.
-3. If the event is Free or break, do nothing else.
-4. If there is an active study/work event, call get_current_tab_metadata().
-5. If active tab is localhost:5173, do nothing.
-6. Decide if the tab matches the current event.
-7. If relevant, clear escalation state gradually. Do not call apply_filter unless removing a previously applied filter.
-8. If unrelated, escalate according to history and confidence.
-9. Save a message only when action is needed and cooldown allows it.
-10. Apply filter or close tab only at the correct escalation level.
 
-CORRECT FIRST TOOL CALL SEQUENCE:
-1. start_browser()
-2. initialize_study_guard_ui(debug_port=9222)
-3. get_current_calendar_event()
-4. If event is Free/break/empty: stop and wait.
-5. Only if there is an active study/work event: get_current_tab_metadata()
+async def conversation_loop(agent: Agent) -> None:
+    print("[Agent] Conversation loop started. Checking user messages every 2 seconds.", file=sys.stderr)
 
-INCORRECT TOOL CALL SEQUENCES:
-- start_browser(), apply_filter(...)
-- apply_filter(...) before initialize_study_guard_ui(debug_port=9222)
-- apply_filter(...) before get_current_calendar_event()
-- close_tab() when calendar is Free
-- start_browser(), start_browser(), start_browser()
-- opening or reading /newMessage
+    while True:
+        try:
+            user_messages = messages_db.get_unprocessed_user_messages()
 
-GOAL:
-Help the student stay aligned with the schedule they chose.
-Do not punish without an active study task.
-Do not act before checking the calendar.
-Do not touch the UI tab.
-Do not duplicate browser windows.""")
+            for message in user_messages:
+                await handle_user_message(agent, message)
 
-        print("Agent is running. Press Ctrl+C to stop.")
+        except Exception as e:
+            print(f"[Agent] Conversation loop error: {e}", file=sys.stderr)
 
-        while True:
-            await asyncio.sleep(1)
+        await asyncio.sleep(USER_MESSAGE_POLL_SECONDS)
+
+
+async def monitoring_cycle(agent: Agent) -> None:
+    prompt = """
+Run one monitoring cycle.
+
+Required order:
+1. Call get_current_calendar_event.
+2. If the result is Free, empty, no active event, break, or הפסקה:
+   stop immediately. Do not call get_current_tab_metadata.
+3. Only if there is an active study/work event:
+   call get_current_tab_metadata.
+4. If the active tab URL starts with http://localhost:5173:
+   do nothing.
+5. Decide whether the active tab is relevant to the current calendar event.
+6. If the tab is relevant:
+   do nothing.
+7. If the tab is unrelated:
+   escalate gradually using save_message_to_user.
+8. Use apply_filter only if escalation level is 3 or higher.
+9. Use close_tab only if escalation level is 4, confidence >= 0.9, and the tab is clearly distracting.
+10. Never close, blur, or punish localhost:5173.
+11. Never open or inspect /newMessage.
+"""
+
+    await run_agent_prompt(agent, prompt)
+
+
+async def monitoring_loop(agent: Agent) -> None:
+    print("[Agent] Monitoring loop started. Checking schedule and browser every 2 minutes.", file=sys.stderr)
+
+    while True:
+        try:
+            await monitoring_cycle(agent)
+
+        except Exception as e:
+            print(f"[Agent] Monitoring loop error: {e}", file=sys.stderr)
+
+        await asyncio.sleep(MONITORING_POLL_SECONDS)
+
+
+async def run_agent() -> None:
+    server_params = create_server_params()
+
+    async with MCPTools(server_params=server_params) as mcp_tools:
+        agent = create_agent(mcp_tools)
+
+        await initialize_study_guard(agent)
+
+        print("[Agent] Agent is running. Press Ctrl+C to stop.", file=sys.stderr)
+
+        await asyncio.gather(
+            conversation_loop(agent),
+            monitoring_loop(agent),
+        )
 
 
 def main() -> None:

@@ -27,6 +27,25 @@ const messages = ref([]);
 const message =  ref('');
 const messagesContainer = ref(null);
 
+// Notification sound for new bot messages from /newMessage
+const notificationSound = new Audio('/notification.wav');
+notificationSound.preload = 'auto';
+
+const playNotificationSound = () => {
+    try {
+        notificationSound.currentTime = 0;
+        const playPromise = notificationSound.play();
+        if (playPromise && typeof playPromise.catch === 'function') {
+            playPromise.catch((err) => {
+                // Most likely autoplay was blocked until the user interacts with the page.
+                console.warn('Notification sound blocked:', err);
+            });
+        }
+    } catch (err) {
+        console.warn('Notification sound error:', err);
+    }
+};
+
 const scrollToBottom = async () => {
     await nextTick();
     if (messagesContainer.value) {
@@ -62,8 +81,6 @@ const sendMessage = async () => {
                 throw new Error(`Server error: ${res.status}`);
             }
             
-            const data = await res.json();
-            messages.value.push({text: data.message, sender: 'bot'});
             scrollToBottom();
         } catch (error) {
             toast.error(`Error: ${error.message}`);
@@ -84,8 +101,13 @@ const getMessages = async () => {
         }
         
         const data = await res.json();
-        messages.value.push(...data.messages);
-        scrollToBottom();
+        const newMessages = Array.isArray(data.messages) ? data.messages : [];
+
+        if (newMessages.length > 0) {
+            messages.value.push(...newMessages);
+            playNotificationSound();
+            scrollToBottom();
+        }
     } catch (error) {
         toast.error(`Error fetching messages: ${error.message}`);
         console.error('Error fetching messages:', error);

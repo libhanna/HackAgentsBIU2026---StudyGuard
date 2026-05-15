@@ -1,7 +1,7 @@
 {
     "metadata": {
         "created_at": "2026-05-15T05:49:46.114927",
-        "last_updated": "2026-05-15T06:01:01.626028"
+        "last_updated": "2026-05-15T07:43:53.042695"
     },
     "messages": [
         {
@@ -58,6 +58,441 @@
                     "fontWeight": "600",
                     "fontSize": "16px"
                 }
+            }
+        },
+        {
+            "id": "ed80753d-17f7-43d0-acbe-a7bf6dd27998",
+            "created_at": "2026-05-15T07:20:36.003839",
+            "title": "test",
+            "text": "hi back from agent",
+            "level": "info",
+            "sound": false,
+            "duration": 5000,
+            "expects_reply": false,
+            "conversation_id": "test-1",
+            "sent_to_user": true,
+            "sent_to_user_at": "2026-05-15T07:22:13.175127",
+            "read_by_user": true,
+            "read_by_user_at": "2026-05-15T07:20:36.079944",
+            "action": {
+                "type": "none"
+            },
+            "toast": {
+                "type": "info",
+                "style": {
+                    "background": "#eff6ff",
+                    "color": "#1e3a8a",
+                    "border": "1px solid #3b82f6",
+                    "fontWeight": "600",
+                    "fontSize": "16px"
+                }
+            }
+        },
+        {
+            "id": "ff5776a6-7db5-452f-8fe2-0379097af3b4",
+            "created_at": "2026-05-15T07:23:11.158065",
+            "title": "",
+            "text": "Hey I am bot",
+            "level": "info",
+            "sound": false,
+            "duration": 5000,
+            "expects_reply": false,
+            "conversation_id": null,
+            "sent_to_user": true,
+            "sent_to_user_at": "2026-05-15T07:23:15.868374",
+            "read_by_user": false,
+            "read_by_user_at": null,
+            "action": {
+                "type": "none"
+            },
+            "toast": {
+                "type": "info",
+                "style": {
+                    "background": "#eff6ff",
+                    "color": "#1e3a8a",
+                    "border": "1px solid #3b82f6",
+                    "fontWeight": "600",
+                    "fontSize": "16px"
+                }
+            }
+        },
+        {
+            "id": "d8535296-2e13-4d0a-b3e4-9e151cf86e39",
+            "created_at": "2026-05-15T07:23:21.203216",
+            "title": "Schedule Update",
+            "text": "I noticed you sent more text. If you want to build or update your schedule, please share your preferences! 😊",
+            "level": "info",
+            "sound": false,
+            "duration": 5000,
+            "expects_reply": true,
+            "conversation_id": "schedule-setup",
+            "sent_to_user": true,
+            "sent_to_user_at": "2026-05-15T07:23:24.885163",
+            "read_by_user": false,
+            "read_by_user_at": null,
+            "action": {
+                "type": "none"
+            },
+            "toast": {
+                "type": "info",
+                "style": {
+                    "background": "#eff6ff",
+                    "color": "#1e3a8a",
+                    "border": "1px solid #3b82f6",
+                    "fontWeight": "600",
+                    "fontSize": "16px"
+                }
+            }
+        },
+        {
+            "id": "3ae3d2bd-4dd1-4647-93ee-4a1d2085877b",
+            "created_at": "2026-05-15T07:27:46.679929",
+            "title": "",
+            "text": "I'm here to assist! What would you like to know or do?",
+            "level": "info",
+            "sound": false,
+            "duration": 5000,
+            "expects_reply": false,
+            "conversation_id": null,
+            "sent_to_user": true,
+            "sent_to_user_at": "2026-05-15T07:27:53.391352",
+            "read_by_user": false,
+            "read_by_user_at": null,
+            "action": {
+                "type": "none"
+            },
+            "toast": {
+                "type": "info",
+                "style": {
+                    "background": "#eff6ff",
+                    "color": "#1e3a8a",
+                    "border": "1px solid #3b82f6",
+                    "fontWeight": "600",
+                    "fontSize": "16px"
+                }
+            }
+        },
+        {
+            "id": "0a147189-107e-4534-9337-c3c85fcabe9a",
+            "created_at": "2026-05-15T07:35:12.801205",
+            "title": "לו״ז ריק",
+            "text": "שמתי לב שהלו״ז שלך להיום ריק. רוצה שנבנה אותו יחד?",
+            "level": "info",
+            "sound": false,
+            "duration": 5000,
+            "expects_reply": true,
+            "conversation_id": "schedule-setup",
+            "sent_to_user": true,
+            "sent_to_user_at": "2026-05-15T07:35:17.307211",
+            "read_by_user": false,
+            "read_by_user_at": null,
+            "action": {
+                "type": "none"
+            },
+            "toast": {
+                "type": "info",
+                "style": {
+                    "background": "#eff6ff",
+                    "color": "#1e3a8a",
+                    "border": "1px solid #3b82f6",
+                    "fontWeight": "600",
+                    "fontSize": "16px"
+                }
+            }
+        },
+        {
+            "id": "d86e975d-f324-4213-b353-47cac28e43fb",
+            "created_at": "2026-05-15T07:35:28.874775",
+            "title": "Greetings!",
+            "text": "Hello! How can I assist you today?",
+            "level": "info",
+            "sound": false,
+            "duration": 5000,
+            "expects_reply": false,
+            "conversation_id": null,
+            "sent_to_user": true,
+            "sent_to_user_at": "2026-05-15T07:35:34.993228",
+            "read_by_user": false,
+            "read_by_user_at": null,
+            "action": {
+                "type": "none"
+            },
+            "toast": {
+                "type": "info",
+                "style": {
+                    "background": "#eff6ff",
+                    "color": "#1e3a8a",
+                    "border": "1px solid #3b82f6",
+                    "fontWeight": "600",
+                    "fontSize": "16px"
+                }
+            }
+        },
+        {
+            "id": "b002997e-533c-4726-93c1-9257e54acb6b",
+            "created_at": "2026-05-15T07:36:46.270332",
+            "title": "לו״ז ריק",
+            "text": "שמתי לב שהלו״ז שלך להיום ריק. רוצה שנבנה אותו יחד?",
+            "level": "info",
+            "sound": false,
+            "duration": 5000,
+            "expects_reply": true,
+            "conversation_id": "schedule-setup",
+            "sent_to_user": true,
+            "sent_to_user_at": "2026-05-15T07:36:47.321436",
+            "read_by_user": false,
+            "read_by_user_at": null,
+            "action": {
+                "type": "none"
+            },
+            "toast": {
+                "type": "info",
+                "style": {
+                    "background": "#eff6ff",
+                    "color": "#1e3a8a",
+                    "border": "1px solid #3b82f6",
+                    "fontWeight": "600",
+                    "fontSize": "16px"
+                }
+            }
+        },
+        {
+            "id": "4fbd748f-0c62-4358-9c34-1d23d145b08b",
+            "created_at": "2026-05-15T07:37:02.777557",
+            "title": "Greeting",
+            "text": "Hello! How can I assist you today?",
+            "level": "info",
+            "sound": false,
+            "duration": 5000,
+            "expects_reply": false,
+            "conversation_id": null,
+            "sent_to_user": true,
+            "sent_to_user_at": "2026-05-15T07:37:05.005600",
+            "read_by_user": false,
+            "read_by_user_at": null,
+            "action": {
+                "type": "none"
+            },
+            "toast": {
+                "type": "info",
+                "style": {
+                    "background": "#eff6ff",
+                    "color": "#1e3a8a",
+                    "border": "1px solid #3b82f6",
+                    "fontWeight": "600",
+                    "fontSize": "16px"
+                }
+            }
+        },
+        {
+            "id": "1b233d7d-4eef-4581-ba31-64283d772476",
+            "created_at": "2026-05-15T07:41:38.939413",
+            "title": "לו״ז ריק",
+            "text": "שמתי לב שהלו״ז שלך להיום ריק. רוצה שנבנה אותו יחד?",
+            "level": "info",
+            "sound": false,
+            "duration": 5000,
+            "expects_reply": true,
+            "conversation_id": "schedule-setup",
+            "sent_to_user": true,
+            "sent_to_user_at": "2026-05-15T07:41:43.862411",
+            "read_by_user": false,
+            "read_by_user_at": null,
+            "action": {
+                "type": "none"
+            },
+            "toast": {
+                "type": "info",
+                "style": {
+                    "background": "#eff6ff",
+                    "color": "#1e3a8a",
+                    "border": "1px solid #3b82f6",
+                    "fontWeight": "600",
+                    "fontSize": "16px"
+                }
+            }
+        },
+        {
+            "id": "61c18c21-7836-4731-b238-2ff39560ddcf",
+            "created_at": "2026-05-15T07:41:59.633878",
+            "title": "הודעה",
+            "text": "האם יש משהו ספציפי שתרצה לדבר עליו?",
+            "level": "info",
+            "sound": false,
+            "duration": 5000,
+            "expects_reply": true,
+            "conversation_id": null,
+            "sent_to_user": true,
+            "sent_to_user_at": "2026-05-15T07:42:01.577486",
+            "read_by_user": false,
+            "read_by_user_at": null,
+            "action": {
+                "type": "none"
+            },
+            "toast": {
+                "type": "info",
+                "style": {
+                    "background": "#eff6ff",
+                    "color": "#1e3a8a",
+                    "border": "1px solid #3b82f6",
+                    "fontWeight": "600",
+                    "fontSize": "16px"
+                }
+            }
+        },
+        {
+            "id": "3bb03c7c-0639-4999-a8c8-67b7226ccb83",
+            "created_at": "2026-05-15T07:42:22.159910",
+            "title": "",
+            "text": "אני כאן אם תצטרך עזרה נוספת!",
+            "level": "info",
+            "sound": false,
+            "duration": 5000,
+            "expects_reply": false,
+            "conversation_id": null,
+            "sent_to_user": true,
+            "sent_to_user_at": "2026-05-15T07:42:28.546350",
+            "read_by_user": false,
+            "read_by_user_at": null,
+            "action": {
+                "type": "none"
+            },
+            "toast": {
+                "type": "info",
+                "style": {
+                    "background": "#eff6ff",
+                    "color": "#1e3a8a",
+                    "border": "1px solid #3b82f6",
+                    "fontWeight": "600",
+                    "fontSize": "16px"
+                }
+            }
+        },
+        {
+            "id": "328ae917-7d22-43cf-8b27-a07d3543eb6d",
+            "created_at": "2026-05-15T07:43:46.531761",
+            "title": "לו״ז ריק",
+            "text": "שמתי לב שהלו״ז שלך להיום ריק. רוצה שנבנה אותו יחד?",
+            "level": "info",
+            "sound": false,
+            "duration": 5000,
+            "expects_reply": true,
+            "conversation_id": "schedule-setup",
+            "sent_to_user": true,
+            "sent_to_user_at": "2026-05-15T07:43:53.042695",
+            "read_by_user": false,
+            "read_by_user_at": null,
+            "action": {
+                "type": "none"
+            },
+            "toast": {
+                "type": "info",
+                "style": {
+                    "background": "#eff6ff",
+                    "color": "#1e3a8a",
+                    "border": "1px solid #3b82f6",
+                    "fontWeight": "600",
+                    "fontSize": "16px"
+                }
+            }
+        }
+    ],
+    "user_messages": [
+        {
+            "id": "8b282263-3afe-43de-a16c-dfb58a558191",
+            "created_at": "2026-05-15T07:20:35.987832",
+            "sender": "user",
+            "text": "hello from user",
+            "conversation_id": "test-1",
+            "processed_by_agent": true,
+            "processed_by_agent_at": "2026-05-15T07:20:36.055446",
+            "metadata": {
+                "source": "test"
+            }
+        },
+        {
+            "id": "a0f5d630-2105-412e-9978-d7ed0608fabb",
+            "created_at": "2026-05-15T07:23:07.432558",
+            "sender": "user",
+            "text": "Please Reply with the text 'Hey I am bot'",
+            "conversation_id": null,
+            "processed_by_agent": true,
+            "processed_by_agent_at": "2026-05-15T07:23:13.278421",
+            "metadata": {
+                "source": "vue-ui"
+            }
+        },
+        {
+            "id": "c42eb7da-411e-4d75-8121-34e6cf71d3aa",
+            "created_at": "2026-05-15T07:23:18.939730",
+            "sender": "user",
+            "text": "more text",
+            "conversation_id": null,
+            "processed_by_agent": true,
+            "processed_by_agent_at": "2026-05-15T07:23:23.216529",
+            "metadata": {
+                "source": "vue-ui"
+            }
+        },
+        {
+            "id": "10533c66-dcea-4b21-9cba-0e4ae8b60bd8",
+            "created_at": "2026-05-15T07:27:43.337289",
+            "sender": "user",
+            "text": "Hey, should it work now?",
+            "conversation_id": null,
+            "processed_by_agent": true,
+            "processed_by_agent_at": "2026-05-15T07:27:48.310465",
+            "metadata": {
+                "source": "vue-ui"
+            },
+            "sent_to_user": true
+        },
+        {
+            "id": "60809569-590b-4b0b-a2b8-0bd026acd84c",
+            "created_at": "2026-05-15T07:35:26.866553",
+            "sender": "user",
+            "text": "Hey",
+            "conversation_id": null,
+            "processed_by_agent": true,
+            "processed_by_agent_at": "2026-05-15T07:35:31.032792",
+            "metadata": {
+                "source": "vue-ui"
+            }
+        },
+        {
+            "id": "7a0e0675-4533-4a62-b4c7-077de3dfddb2",
+            "created_at": "2026-05-15T07:37:00.717770",
+            "sender": "user",
+            "text": "helllo",
+            "conversation_id": null,
+            "processed_by_agent": true,
+            "processed_by_agent_at": "2026-05-15T07:37:04.720066",
+            "metadata": {
+                "source": "vue-ui"
+            }
+        },
+        {
+            "id": "343fea09-4e12-495d-9f58-d10e403fe564",
+            "created_at": "2026-05-15T07:41:57.251208",
+            "sender": "user",
+            "text": "הודעה",
+            "conversation_id": null,
+            "processed_by_agent": true,
+            "processed_by_agent_at": "2026-05-15T07:42:02.574106",
+            "metadata": {
+                "source": "vue-ui"
+            }
+        },
+        {
+            "id": "e60bc8de-8f38-448a-9927-bc23f7c76a84",
+            "created_at": "2026-05-15T07:42:20.317269",
+            "sender": "user",
+            "text": "עוד הודעה - הפעם כיביתי את הרמקול",
+            "conversation_id": null,
+            "processed_by_agent": true,
+            "processed_by_agent_at": "2026-05-15T07:42:23.961493",
+            "metadata": {
+                "source": "vue-ui"
             }
         }
     ]
