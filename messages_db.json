@@ -1,0 +1,64 @@
+{
+    "metadata": {
+        "created_at": "2026-05-15T05:49:46.114927",
+        "last_updated": "2026-05-15T06:01:01.626028"
+    },
+    "messages": [
+        {
+            "id": "53fb0594-8d09-4932-b1ca-2e0d6fec6620",
+            "created_at": "2026-05-15T05:50:02.693792",
+            "title": "לו״ז ריק",
+            "text": "שמתי לב שהלו״ז שלך להיום ריק. רוצה שנבנה אותו יחד כדי שיהיה לך יום לימוד מסודר?",
+            "level": "info",
+            "sound": false,
+            "duration": 5000,
+            "expects_reply": false,
+            "conversation_id": null,
+            "sent_to_user": true,
+            "sent_to_user_at": "2026-05-15T06:01:01.626028",
+            "read_by_user": false,
+            "read_by_user_at": null,
+            "action": {
+                "type": "none"
+            },
+            "toast": {
+                "type": "info",
+                "style": {
+                    "background": "#eff6ff",
+                    "color": "#1e3a8a",
+                    "border": "1px solid #3b82f6",
+                    "fontWeight": "600",
+                    "fontSize": "16px"
+                }
+            }
+        },
+        {
+            "id": "0fc661ed-5160-46ca-a039-3d5dea12d902",
+            "created_at": "2026-05-15T05:58:55.322757",
+            "title": "בניית לו״ז",
+            "text": "שמתי לב שהלו״ז שלך להיום ריק. רוצה שנבנה אותו יחד כדי שיהיה לך יום לימוד מסודר?",
+            "level": "info",
+            "sound": false,
+            "duration": 5000,
+            "expects_reply": false,
+            "conversation_id": null,
+            "sent_to_user": true,
+            "sent_to_user_at": "2026-05-15T06:01:01.626028",
+            "read_by_user": false,
+            "read_by_user_at": null,
+            "action": {
+                "type": "none"
+            },
+            "toast": {
+                "type": "info",
+                "style": {
+                    "background": "#eff6ff",
+                    "color": "#1e3a8a",
+                    "border": "1px solid #3b82f6",
+                    "fontWeight": "600",
+                    "fontSize": "16px"
+                }
+            }
+        }
+    ]
+}

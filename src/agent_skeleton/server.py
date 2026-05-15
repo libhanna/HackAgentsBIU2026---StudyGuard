@@ -5,6 +5,7 @@ import sys
 import os
 from datetime import datetime
 
+
 _CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 _SRC_DIR = os.path.abspath(os.path.join(_CURRENT_DIR, ".."))           # .../src
 _PROJECT_ROOT = os.path.abspath(os.path.join(_CURRENT_DIR, "..", "..")) # project root (for database.py)
@@ -21,11 +22,13 @@ from agent_skeleton.tools.get_biu_assignment_tasks import get_biu_assignment_tas
 from agent_skeleton.tools.browser.filter import apply_visual_effect_to_current_tab
 
 from database import CalendarDB
+from messages_db import MessagesDB
 
 
 mcp = FastMCP("agent-skeleton")
 # אתחול ה-Database בתוך השרת
 db = CalendarDB()
+messages_db = MessagesDB()
 
 @mcp.tool()
 def get_current_calendar_event() -> str:
@@ -66,6 +69,52 @@ def close_tab(url_contains: str, debug_port: int = 9222) -> str:
 def get_current_tab_metadata(debug_port: int = 9222) -> dict:
     """MCP tool that get the active browser tab metadata."""
     return get_active_tab_metadata(debug_port)
+
+@mcp.tool()
+def save_message_to_user(
+    text: str,
+    title: str = "",
+    level: str = "info",
+    sound: bool = False,
+    duration: int = 5000,
+    expects_reply: bool = False,
+    conversation_id: str | None = None,
+    action_type: str = "none"
+) -> dict:
+    """
+    Save a message from the agent to the user.
+
+    This tool does not send the message directly to the UI.
+    It writes the message into messages_db.json.
+    The UI/API can later fetch unsent messages and mark them as sent_to_user.
+    """
+
+    if not text or not text.strip():
+        return {
+            "success": False,
+            "error": "Message text is required."
+        }
+
+    allowed_levels = ["info", "warning", "danger", "critical"]
+
+    if level not in allowed_levels:
+        level = "info"
+
+    message = messages_db.add_message(
+        text=text.strip(),
+        title=title.strip() if title else "",
+        level=level,
+        sound=sound,
+        duration=duration,
+        expects_reply=expects_reply,
+        conversation_id=conversation_id,
+        action_type=action_type
+    )
+
+    return {
+        "success": True,
+        "message": message
+    }
 
 def main() -> None:
     mcp.run()

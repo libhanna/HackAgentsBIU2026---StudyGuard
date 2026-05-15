@@ -71,6 +71,28 @@ const sendMessage = async () => {
         }
     }
 }
+
+const getMessages = async () => {
+    try {
+        const res = await fetch("http://localhost:5000/newMessage", {
+            method: "GET",
+            credentials: "include"
+        });
+        
+        if (!res.ok) {
+            throw new Error(`Server error: ${res.status}`);
+        }
+        
+        const data = await res.json();
+        messages.value.push(...data.messages);
+        scrollToBottom();
+    } catch (error) {
+        toast.error(`Error fetching messages: ${error.message}`);
+        console.error('Error fetching messages:', error);
+    }
+}
+
+setInterval(getMessages, 9000);
 </script>
 
 <style scoped>

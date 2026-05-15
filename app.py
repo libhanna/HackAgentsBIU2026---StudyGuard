@@ -6,6 +6,7 @@ from database import CalendarDB
 from datetime import datetime
 from openai import OpenAI
 from dotenv import load_dotenv
+from messages_db import MessagesDB
 
 load_dotenv()
 
@@ -20,6 +21,7 @@ CORS(
     supports_credentials=True,
 )
 db = CalendarDB()
+messages_db = MessagesDB()
 
 # הגדרת הלקוח של OpenRouter (השתמש במפתח שלך מה-.env)
 client = OpenAI(
@@ -53,10 +55,18 @@ def get_tasks():
 # 4. /newMessage - מחזיר את הודעת ה-AI האחרונה
 @app.route('/newMessage', methods=['GET'])
 def get_new_message():
-    msg = db.get_latest_message()
-    if msg:
-        return jsonify({"has_new": True, "message": msg}), 200
-    return jsonify({"has_new": False, "message": None}), 200
+    messages = messages_db.get_unsent_messages(mark_as_sent=True)
+
+    if messages:
+        return jsonify({
+            "has_new": True,
+            "messages": messages
+        }), 200
+
+    return jsonify({
+        "has_new": False,
+        "messages": []
+    }), 200
 
 # 5. /sendMessage - מעבד את ההודעה ומחזיר רק את שמות האירועים מופרדים בפסיק
 @app.route('/sendMessage', methods=['POST', 'OPTIONS'])
